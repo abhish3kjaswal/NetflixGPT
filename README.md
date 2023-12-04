@@ -1,6 +1,12 @@
 # NETLFIX GPT
 - create React app
 - Tailwind setup and configuration
+- Header
+- Routing App
+- Login Form
+- Sign Up Form
+- Form Validation
+- useRef Hook
 
 # Features
     - Login/Sign Up
@@ -21,3 +27,11 @@
     - NetflixGPT
         - Search Bar
         - Movie Suggestions
+
+
+
+# firebase 
+- To deploy
+    - firebase login
+    - firebase init - select hosting option with configurable file
+    - firebase deploy
