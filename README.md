@@ -4,6 +4,12 @@
 
 # Features
     - Login/Sign Up
+        - Sign in / Sign Up form
+        - after login -> redirect to browse page
+
+    - Login form
+    - Sign Up form
+
     - Browse Page(After authentication)
         - Header
         - Main Movie
@@ -11,3 +17,7 @@
             -  Title in Description
             - Movie Suggestions
                 - MoviesList
+        
+    - NetflixGPT
+        - Search Bar
+        - Movie Suggestions
