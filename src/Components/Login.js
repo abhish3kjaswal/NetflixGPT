@@ -2,22 +2,45 @@ import React, { useRef, useState } from "react";
 import Header from "./Header";
 import { checkValidData } from "../Utils/validate";
 
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { auth } from "../Utils/firebase";
+import { useDispatch } from "react-redux";
+import { addUser } from "../Utils/Features/userSlice";
+import { useNavigate } from "react-router-dom";
+
 const Login = () => {
   const [isSignIn, setIsSignIn] = useState(true);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const email = useRef("");
+  const name = useRef("");
   const password = useRef("");
 
   const toggleSignUpFn = () => {
+    if(email.current.value) email.current.value = "";
+    if(password.current.value) password.current.value = "";
+    
     setIsSignIn(!isSignIn);
+    setErrorMsg("");
   };
 
   const handleFormSubmission = (e) => {
     e && e.preventDefault();
     e && e.stopPropagation();
-    console.log("handleFormSubmission-->");
 
+    let emailVal = email?.current?.value;
+    let passwordVal = password?.current?.value;
+    let nameVal = name?.current?.value;
+
+    //Validate the form data validation
     const message = checkValidData(
       email?.current?.value,
       password?.current?.value
@@ -25,11 +48,58 @@ const Login = () => {
     if (message) setErrorMsg(message);
     else setErrorMsg("");
 
-    console.log("Message->", message);
 
-    //Validate the form data validation
+    if (message !== null) return;
 
-    // checkValidData()
+    // SignIn , Sign Up Logic
+    if (!isSignIn) {
+      //Sign Up Logic
+
+      createUserWithEmailAndPassword(auth, emailVal, passwordVal)
+        .then((userCredential) => {
+          // Signed up
+          const user = userCredential.user;
+          updateProfile(user, {
+            displayName: nameVal,
+          })
+            .then(() => {
+              // Profile updated!
+              // ...
+              const { uid, email, displayName } = auth.currentUser;
+              // ...
+              dispatch(addUser({ uid, email, displayName }));
+              email.current.value = "";
+              password.current.value = "";
+              name.current.value = "";
+              navigate("/browse");
+            })
+            .catch((error) => {
+              // An error occurred
+              // ...
+            });
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMsg(errorCode + errorMessage);
+          //   dispatch(addUser())
+          // ..
+        });
+    } else {
+      //Sign In Form
+      signInWithEmailAndPassword(auth, emailVal, passwordVal)
+        .then((userCredential) => {
+          // Signed in
+          const user = userCredential.user;
+          // ...
+        })
+        .catch((error) => {
+          const errorCode = error.code;
+          const errorMessage = error.message;
+          setErrorMsg(errorCode + errorMessage);
+        });
+    }
   };
 
   return (
@@ -43,7 +113,7 @@ const Login = () => {
       </div>
       <form
         className="bg-black absolute p-12 w-3/12 my-36 mx-auto right-0 left-0 opacity-80 text-white"
-        onClick={handleFormSubmission}
+        onSubmit={handleFormSubmission}
       >
         <h1 className="font-bold text-3xl py-4">
           {isSignIn ? "Sign In" : "Sign Up"}
@@ -53,6 +123,7 @@ const Login = () => {
             <input
               className="p-2 my-4 w-full bg-gray-700 rounded-sm"
               type="text"
+              ref={name}
               placeholder="Enter Name"
             />
           )}
@@ -60,7 +131,7 @@ const Login = () => {
             className="p-2 my-4 w-full bg-gray-700 rounded-sm"
             type="text"
             ref={email}
-            placeholder="Email Address"
+            placeholder="Enter Email"
           />
           <input
             className="p-2 my-4 w-full bg-gray-700 rounded-sm"
@@ -78,7 +149,7 @@ const Login = () => {
           <p className="text-red-500 font-bold text-sm">{errorMsg || ""}</p>
           <button
             className="py-4 my-5 bg-red-700 w-full rounded-sm"
-            type="submit"
+            type={"submit"}
           >
             {isSignIn ? "Sign In" : "Sign Up"}
           </button>
